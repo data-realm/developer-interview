@@ -13,13 +13,18 @@ have reported some issues with the application and we would like you to investig
 
 ### Issue One
 
-One of our customers reported to us that sometimes the data they get back from our api seems incomplete, they noticed
-that sometimes countries are missing from the `/all` response.
+We have had several reports that in the afternoon it takes a really long time to load data, this seems
+to be affecting everyone and it seems to affect all of the api's. 
 
 ### Issue Two
 
-We have had several reports that in the afternoon it takes a really long time to load data, this seems
-to be affecting everyone and it seems to affect all of the api's. 
+It looks like the service that provides country information for us has made an update because recently
+we noticed that we have duplicate country names in the `/all` results.
+
+### Issue Three
+
+One of our customers reported to us that sometimes the data they get back from our api seems incomplete, they noticed
+that sometimes countries are missing from the `/all` response.
 
 ## Building and Running the code
 
@@ -36,3 +41,4 @@ you will always be using the version specified in the project_
 
 * When I try to run the application I get a NPE from `DBManager`: _The database is a file based sqllite database (you can find it in `DBManagerImpl`), check the path is 
 valid for your application context, or if your running from within an IDE make sure the working directory is the root of the project_ 
+* I can't get my Database tool to work: _Try [sqllitebrowser](http://sqlitebrowser.org/) its got platform specific installers or a portable version_
