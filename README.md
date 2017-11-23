@@ -26,8 +26,8 @@ to be affecting everyone and it seems to affect all of the api's.
 You may import and run the project within the IDE of your choice or run the following gradle command to generate and
 a jar to execute.
 
-From the root dir execute `gradlew jar` (`./gradlew jar` in some environements) and then, `java -jar
-build/libs/dev-interview-materials.jar`.
+From the root dir execute `gradlew build` (`./gradlew build` in some environments) and then, `java -jar
+build/libs/integration-interview.jar`.
 
 _Note: why not maven? Primarily due to the convenience of the gradle wrapper, you don't need to install anything and
 you will always be using the version specified in the project_
