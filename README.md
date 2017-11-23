@@ -42,3 +42,4 @@ you will always be using the version specified in the project_
 * When I try to run the application I get a NPE from `DBManager`: _The database is a file based sqllite database (you can find it in `DBManagerImpl`), check the path is 
 valid for your application context, or if your running from within an IDE make sure the working directory is the root of the project_ 
 * I can't get my Database tool to work: _Try [sqllitebrowser](http://sqlitebrowser.org/) its got platform specific installers or a portable version_
+* This json's terrible i can't read it: _JSON is pretty easy to format with plugins in most Editors otherwise you could use this great []online formatting tool](https://jsonformatter.curiousconcept.com/)_ 
