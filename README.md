@@ -31,3 +31,8 @@ build/libs/integration-interview.jar`.
 
 _Note: why not maven? Primarily due to the convenience of the gradle wrapper, you don't need to install anything and
 you will always be using the version specified in the project_
+
+### Troubleshooting
+
+* When I try to run the application I get a NPE from `DBManager`: _The database is a file based sqllite database (you can find it in `DBManagerImpl`), check the path is 
+valid for your application context, or if your running from within an IDE make sure the working directory is the root of the project_ 
