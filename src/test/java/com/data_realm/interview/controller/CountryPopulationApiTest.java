@@ -72,5 +72,4 @@ public class CountryPopulationApiTest {
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(countryPopulation, result.getBody());
   }
-
 }

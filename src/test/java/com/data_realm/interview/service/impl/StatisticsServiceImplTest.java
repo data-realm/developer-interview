@@ -42,9 +42,39 @@ public class StatisticsServiceImplTest {
   }
 
   @Test
-  public void getAllTest() throws Exception {
+  public void getAllWithDuplicateCountriesDoesNotReturnDuplicates() throws Exception {
     List<CountryPopulation> countries = new ArrayList<>();
     countries.add(new CountryPopulation("test", 1));
+    when(dbRepo.getCountryPopulations()).thenReturn(countries);
+    when(externalRepo.getCountryPopulations()).thenReturn(countries);
+
+    List<CountryPopulation> result = service.getAllCountries();
+
+    assertTrue(result.size() == 1);
+  }
+  
+  @Test
+  public void getAllWithMixedCaseDuplicateCountriesDoesNotReturnDuplicates() throws Exception {
+    List<CountryPopulation> countries = new ArrayList<>();
+    
+    countries.add(new CountryPopulation("test", 1));
+    countries.add(new CountryPopulation("Test", 1));
+    
+    when(dbRepo.getCountryPopulations()).thenReturn(countries);
+    when(externalRepo.getCountryPopulations()).thenReturn(countries);
+
+    List<CountryPopulation> result = service.getAllCountries();
+
+    assertTrue(result.size() == 1);
+  }
+  
+  @Test
+  public void getAllFor2EntriesReturns2Results() throws Exception {
+    List<CountryPopulation> countries = new ArrayList<>();
+    
+    countries.add(new CountryPopulation("test123", 1));
+    countries.add(new CountryPopulation("test124", 1));
+    
     when(dbRepo.getCountryPopulations()).thenReturn(countries);
     when(externalRepo.getCountryPopulations()).thenReturn(countries);
 
