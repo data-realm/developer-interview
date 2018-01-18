@@ -38,17 +38,33 @@ public class StatisticsServiceImpl implements StatisticsService {
 
   @Override
   public List<CountryPopulation> getAllCountries() {
-      List<CountryPopulation> aggregatedResults = new ArrayList<>();
-      try {
-        aggregatedResults.addAll(dbRepo.getCountryPopulations());
-      } catch (IOException except) {
-        System.out.println("Oh no something happened loading the countries from the database");
-      }
+      /** ISSUE #3 - part 2/2 - sometimes StatRepositoryExternal is throwing StatsRetrivalError exception so no data is returned from that repo.
+       * This can happen on the other repo so there needs to be a number of RETRYs in case of failure. */
+      int maxTries = 5; // can be adjusted according to the failure rate of the server.
+      int countOfTries = 0;
 
-      try {
-        aggregatedResults.addAll(externalRepo.getCountryPopulations());
-      } catch (IOException except) {
-        System.out.println("Oh no something happened loading the countries from the api");
+      List<CountryPopulation> aggregatedResults = new ArrayList<>();
+      while(true) {
+        try {
+          aggregatedResults.addAll(dbRepo.getCountryPopulations());
+          break;
+        } catch (IOException except) {
+          if (++countOfTries==maxTries) {
+            System.out.println("Oh no something happened loading the countries from the database");
+          }
+        }
+      }
+      countOfTries = 0;
+
+      while(true) {
+        try {
+          aggregatedResults.addAll(externalRepo.getCountryPopulations());
+          break;
+        } catch (IOException except) {
+          if (++countOfTries==maxTries) {
+            System.out.println("Oh no something happened loading the countries from the api");
+          }
+        }
       }
 
       return aggregatedResults;
