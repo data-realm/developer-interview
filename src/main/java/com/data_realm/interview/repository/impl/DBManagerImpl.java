@@ -21,6 +21,9 @@ import java.util.List;
  */
 @Repository("database-stats")
 public class DBManagerImpl implements DBManager {
+    private static Connection c = null;
+
+    //Issue #1
   private static final String SELECT_ALL = "SELECT c.CountryName, sum(ci.Population) AS 'Population' " +
       "FROM Country c " +
       "INNER JOIN State s ON c.CountryId = s.CountryId " +
@@ -28,10 +31,11 @@ public class DBManagerImpl implements DBManager {
       "GROUP BY c.CountryName";
 
     public Connection getConnection() {
-        Connection c = null;
         try {
-            Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:resources/data/citystatecountry.db");
+            if(c == null) {
+                Class.forName("org.sqlite.JDBC");
+                c = DriverManager.getConnection("jdbc:sqlite:resources/data/citystatecountry.db");
+            }
             System.out.println("Opened database successfully");
 
         } catch (ClassNotFoundException cnf) {
