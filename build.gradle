@@ -21,6 +21,10 @@ idea {
 dependencies {
     compile  'org.xerial:sqlite-jdbc:3.8.11.1'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '2.7.6'
+    compile group: 'org.springframework', name: 'spring-aop', version: '5.0.3.RELEASE'
+    compile group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.13'
+    compile group: 'org.springframework.retry', name: 'spring-retry', version: '1.2.2.RELEASE'
 
     compile("org.springframework.boot:spring-boot-starter-web")
 

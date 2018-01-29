@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StatisticsServiceImpl implements StatisticsService {
@@ -25,20 +23,50 @@ public class StatisticsServiceImpl implements StatisticsService {
     this.externalRepo = externalRepo;
   }
 
-  @Override
-  public Optional<CountryPopulation> findCountry(String countryName) {
-    for (CountryPopulation countryPopulation : getAllCountries()) {
-      if (countryPopulation.getName().toLowerCase().equals(countryName.trim().toLowerCase())) {
-        return Optional.of(countryPopulation);
-      }
+
+    /**
+     *
+     * We are going to rely on our DB since getting data from our DB should be way faster than
+     * calling an external service
+     *
+     */
+    @Override
+    public Optional<CountryPopulation> findCountry(String countryName) {
+        String cleanedCountryName = countryName.trim().toLowerCase();
+
+        return getDbCountryPopulation(cleanedCountryName).map(Optional::of)
+                .orElse(getExternalCountryPopulation(cleanedCountryName));
     }
 
-    return Optional.empty();
-  }
+    private Optional<CountryPopulation> getDbCountryPopulation(String countryName) {
+        try {
+            return dbRepo.getCountryPopulationByName(countryName);
+        } catch (IOException except) {
+            System.out.println("Oh no something happened loading the countries from the database");
+            return Optional.empty();
+        }
+    }
 
+    private Optional<CountryPopulation> getExternalCountryPopulation(String countryName) {
+        try {
+            return externalRepo.getCountryPopulationByName(countryName);
+        } catch (IOException except) {
+            System.out.println("Oh no something happened loading the countries from the database");
+            return Optional.empty();
+        }
+    }
+
+
+    /**
+     * I am going with the solution of trusting our own data over the external one
+     * I think we should have a naming standard for the countries
+     * We can have a hierarchy or a ranking system of trust. I am a programmer I'll do what the Costumer Success guy says is better :D
+     */
   @Override
   public List<CountryPopulation> getAllCountries() {
-      List<CountryPopulation> aggregatedResults = new ArrayList<>();
+      Set<CountryPopulation> aggregatedResults = new HashSet<>();
+      List<CountryPopulation> toReturn = new ArrayList<>();
+
       try {
         aggregatedResults.addAll(dbRepo.getCountryPopulations());
       } catch (IOException except) {
@@ -51,6 +79,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         System.out.println("Oh no something happened loading the countries from the api");
       }
 
-      return aggregatedResults;
+      toReturn.addAll(aggregatedResults);
+
+      return toReturn;
   }
 }
