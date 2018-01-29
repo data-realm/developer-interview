@@ -24,7 +24,7 @@ public class StatisticsServiceImpl implements StatisticsService {
   StatisticsServiceImpl(@Qualifier("database-stats") StatRepository dbRepo,
                         @Qualifier("api-stats") StatRepository externalRepo) {
 
-      //Issue #1, caching the results
+      //Issue #3, caching the results
       cacheService = new Cache2kBuilder<String, Map<String, CountryPopulation>>() {}
               .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
               .resilienceDuration(30, TimeUnit.SECONDS) // cope with at most 30 seconds
