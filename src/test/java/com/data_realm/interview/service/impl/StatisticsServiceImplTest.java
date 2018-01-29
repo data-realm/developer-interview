@@ -31,10 +31,9 @@ public class StatisticsServiceImplTest {
 
   @Test
   public void findCountryTest() throws Exception {
-    List<CountryPopulation> countries = new ArrayList<>();
-    countries.add(new CountryPopulation("test", 1));
-    when(dbRepo.getCountryPopulations()).thenReturn(countries);
-    when(externalRepo.getCountryPopulations()).thenReturn(countries);
+    CountryPopulation countryPopulation = new CountryPopulation("test", 1);
+    when(dbRepo.getCountryPopulationByName(countryPopulation.getName())).thenReturn(Optional.of(countryPopulation));
+    when(externalRepo.getCountryPopulationByName(countryPopulation.getName())).thenReturn(Optional.of(countryPopulation));
 
     Optional<CountryPopulation> result = service.findCountry("test");
 
@@ -50,6 +49,6 @@ public class StatisticsServiceImplTest {
 
     List<CountryPopulation> result = service.getAllCountries();
 
-    assertTrue(result.size() == 2);
+    assertTrue(result.size() == 1);
   }
 }
