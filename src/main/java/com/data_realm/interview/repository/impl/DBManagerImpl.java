@@ -21,10 +21,12 @@ import java.util.List;
  */
 @Repository("database-stats")
 public class DBManagerImpl implements DBManager {
+
+    //Issue #3
   private static final String SELECT_ALL = "SELECT c.CountryName, sum(ci.Population) AS 'Population' " +
       "FROM Country c " +
-      "INNER JOIN State s ON c.CountryId = s.CountryId " +
-      "INNER JOIN City ci ON s.StateId = ci.StateId " +
+      "LEFT JOIN State s ON c.CountryId = s.CountryId " +
+      "LEFT JOIN City ci ON s.StateId = ci.StateId " +
       "GROUP BY c.CountryName";
 
     public Connection getConnection() {
