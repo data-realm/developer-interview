@@ -16,8 +16,6 @@ import java.util.List;
 
 /**
  * This DBManager implementation provides a connection to the database containing population data.
- *
- * Created by ckeswani on 9/16/15.
  */
 @Repository("database-stats")
 public class DBManagerImpl implements DBManager {
