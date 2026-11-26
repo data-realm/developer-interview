@@ -34,7 +34,11 @@ docs/             conventions and billing rules
 
 ## Running it
 
-You need JDK 17 or newer. Gradle comes with the repo through the wrapper.
+Nothing to install. If you don't have JDK 17 or newer, the first `./gradlew` run downloads a
+portable JDK into `.jdk/` in this folder (about 200 MB, one time only, nothing installed
+system-wide). Gradle comes with the repo through the wrapper. On Windows, use `gradlew.bat`.
+
+If you open the project in IntelliJ, point it at `.jdk/` or let it download a JDK when it asks.
 
 ```bash
 ./gradlew test        # run the tests

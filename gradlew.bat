@@ -62,6 +62,10 @@ set APP_HOME=%DIRNAME%
 @rem Resolve any "." and ".." in APP_HOME to make it shorter.
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
+@rem Interview exercise: download a portable JDK into .jdk\ if no JDK 17+ is installed.
+@rem (Not part of the stock Gradle wrapper; re-add after `gradle wrapper` regenerates this file.)
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%APP_HOME%\gradle\ensure-jdk.ps1"`) do set "JAVA_HOME=%%i"
+
 @rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 
