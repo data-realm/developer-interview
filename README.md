@@ -2,8 +2,8 @@
 
 ## What this session is
 
-This is not a puzzle and there are no trick questions. It's a small, realistic service with a
-couple of real-looking tickets. It gives us shared code to work on together and talk about.
+This is not a puzzle and there are no trick questions. It's a small, realistic service and a
+real-looking ticket. It gives us shared code to work on together and talk about.
 
 **Please use the AI tools you use day to day** (Claude Code, Cursor, Copilot, ChatGPT, or none).
 We're not testing whether you can work without them; we want to see how you work with them. Share
@@ -53,19 +53,6 @@ curl localhost:8080/invoices?status=SUSPENDED
 curl -X POST localhost:8080/admin/dunning/run    # run the dunning job now
 ```
 
-## Tickets
+## Your task
 
-Work on them in whichever order you like.
-
-### BIL-209: US customers suspended a day early (bug)
-
-> **From support:** Sunset Studios (based in Los Angeles) say their account was suspended on the
-> evening of 10 March. Their invoice was due on 3 March and our terms give 7 days' grace, so they
-> should have had until the end of the 10th. Two other US customers have said something similar.
-> Nobody in Europe has complained.
-
-### BIL-214: Late fee on suspension (feature)
-
-> **From finance:** When we suspend an account for non-payment, add a late fee of 2.5% of the
-> outstanding amount, with a minimum of £5. Customers on legacy plans shouldn't be charged the
-> fee. The fee needs to show on the invoice and in the suspension email.
+We'll tell you which GitHub issue to work on. Please stick to that one issue.
