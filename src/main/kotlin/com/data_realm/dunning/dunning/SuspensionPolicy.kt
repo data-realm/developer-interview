@@ -15,11 +15,11 @@ class SuspensionPolicy(
     /**
      * An unpaid invoice is suspended once its grace period has fully elapsed. With a 7-day grace
      * period and a due date of 3 March, the customer has until the end of 10 March to pay and is
-     * suspended from 11 March.
+     * suspended from 11 March. These are calendar dates in the customer's own time zone.
      */
     fun shouldSuspend(invoice: Invoice, customer: Customer): Boolean {
         if (invoice.status != InvoiceStatus.OPEN) return false
         val lastDayOfGrace = invoice.dueDate.plusDays(properties.graceDays.toLong())
-        return clock.systemDate().isAfter(lastDayOfGrace)
+        return clock.today(customer.zone).isAfter(lastDayOfGrace)
     }
 }
