@@ -7,3 +7,12 @@ dunning:
   cron: "0 0 * * * *"
   grace-days: 7
   retry-days-after-due: [1, 3, 5]
+  # Late fee charged on suspension. The minimums are rough equivalents of 5 GBP, awaiting finance
+  # sign-off. A minimum is required for every billing currency or the service will not start.
+  late-fee:
+    basis-points: 250
+    minimum:
+      GBP: "5.00"
+      EUR: "6.00"
+      USD: "6.50"
+      JPY: "1000"

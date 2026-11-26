@@ -1,7 +1,9 @@
 package com.data_realm.dunning.dunning
 
+import com.data_realm.dunning.domain.AdjustmentType
 import com.data_realm.dunning.domain.Customer
 import com.data_realm.dunning.domain.Invoice
+import com.data_realm.dunning.domain.InvoiceAdjustment
 import com.data_realm.dunning.domain.InvoiceStatus
 import com.data_realm.dunning.domain.PaymentAttempt
 import com.data_realm.dunning.notifications.CustomerNotifier
@@ -25,6 +27,7 @@ class DunningJob(
     private val customers: CustomerRepository,
     private val suspensionPolicy: SuspensionPolicy,
     private val retryPolicy: RetryPolicy,
+    private val lateFeePolicy: LateFeePolicy,
     private val gateway: PaymentGateway,
     private val notifier: CustomerNotifier,
     private val clock: BillingClock,
@@ -62,8 +65,17 @@ class DunningJob(
     }
 
     private fun suspend(invoice: Invoice, customer: Customer) {
-        val updated = invoices.save(invoice.copy(status = InvoiceStatus.SUSPENDED))
-        notifier.invoiceSuspended(customer, updated)
+        val lateFee = lateFeePolicy.lateFee(invoice, customer)
+        val withFee = if (lateFee == null) invoice else invoice.withAdjustment(
+            InvoiceAdjustment(
+                type = AdjustmentType.LATE_FEE,
+                amount = lateFee,
+                reason = lateFeePolicy.reason(lateFee.currency),
+                createdAt = clock.now(),
+            ),
+        )
+        val updated = invoices.save(withFee.copy(status = InvoiceStatus.SUSPENDED))
+        notifier.invoiceSuspended(customer, updated, lateFee)
     }
 
     private fun retry(invoice: Invoice, customer: Customer): Boolean {
