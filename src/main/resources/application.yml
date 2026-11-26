@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: dunning-service
+
+dunning:
+  # Runs hourly. Production runs two instances of this service behind the load balancer.
+  cron: "0 0 * * * *"
+  grace-days: 7
+  retry-days-after-due: [1, 3, 5]

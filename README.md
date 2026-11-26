@@ -1,54 +1,67 @@
-# Materials for developer interview at Data Realm
+# Developer interview at Data Realm: dunning service
 
-## Purpose
-The purpose of this exercise is not to give a "gotcha" question or puzzle, but a straightforward (albeit contrived)
-example of the kind of requirement that might arise in a real project so that we have a shared context for a technical 
-conversation during the interview. We are interested in how you approach a project, so you should feel free to add new 
-class files as well modify the files that are provided as you see fit. Use of your favourite libraries or frameworks is
-fine, but not required. How you demonstrate the correctness of your implementation is up to you.
+## What this session is
 
-## Requirements
-We have a small application that provides population statistics for countries. Recently some of our customers
-have reported some issues with the application and we would like you to investigate the problems.
+This is not a puzzle and there are no trick questions. It's a small, realistic service with a
+couple of real-looking tickets. It gives us shared code to work on together and talk about.
 
-### Issue One
+**Please use the AI tools you use day to day** (Claude Code, Cursor, Copilot, ChatGPT, or none).
+We're not testing whether you can work without them; we want to see how you work with them. Share
+your screen and think aloud as you go. We care far more about how you approach the problem than
+about finishing.
 
-We have had several reports that in the afternoon it takes a really long time to load data. This seems
-to be affecting everyone and it seems to affect all of the APIs. 
+If anything in a ticket is unclear, ask us, as you would ask a product owner. We'll answer the
+same way.
 
-### Issue Two
+## The service
 
-It looks like the service that provides country information for us has made an update, because recently
-we noticed that we have duplicate country names in the `/all` results.
+When a subscription invoice isn't paid, this service runs *dunning*: it retries the card on set
+days after the due date and suspends the account once the grace period is over. It runs hourly as
+a scheduled job.
 
-### Issue Three
+```
+src/main/kotlin/com/data_realm/dunning/
+  dunning/        DunningJob (the hourly run), SuspensionPolicy, RetryPolicy
+  domain/         Customer, PlanTier, Invoice, InvoiceAdjustment, PaymentAttempt
+  money/          Money
+  time/           BillingClock
+  payments/       PaymentGateway (and a fake)
+  notifications/  CustomerNotifier (and a logging fake)
+  repository/     in-memory repositories
+  api/            a small REST API
+docs/             conventions and billing rules
+```
 
-One of our customers reported to us that sometimes the data they get back from our api seems incomplete: they noticed
-that sometimes countries are missing from the `/all` response.
+## Running it
 
-## Building and Running the code
+You need JDK 17 or newer. Gradle comes with the repo through the wrapper.
 
-You may import and run the project within the IDE of your choice, or run the following Gradle command to generate a jar to execute.
+```bash
+./gradlew test        # run the tests
+./gradlew bootRun     # start on :8080 with some demo customers
+```
 
-From the root dir execute `gradlew build` (`./gradlew build` in some environments) and then, `java -jar
-build/libs/integration-interview.jar`.
+With the app running:
 
+```bash
+curl localhost:8080/invoices                     # open invoices
+curl localhost:8080/invoices?status=SUSPENDED
+curl -X POST localhost:8080/admin/dunning/run    # run the dunning job now
+```
 
-### Troubleshooting & FAQ
+## Tickets
 
-* Why not Maven?
-  
-  Primarily due to the convenience of the Gradle wrapper; you don't need to install anything and you will always be using the version specified in the project.
+Work on them in whichever order you like.
 
-* When I try to run the application I get a NPE from `DBManager`.
-  
-  The database is a file-based SQLite database (you can find it in `DBManagerImpl`) - check the path is 
-valid for your application context, or, if you're running from within an IDE, make sure the working directory is the root of the project.
+### BIL-209: US customers suspended a day early (bug)
 
-* I can't get my Database tool to work.
-  
-  Try [DB Browser for SQLite](http://sqlitebrowser.org/). Platform-specific installers and a portable version are available.
+> **From support:** Sunset Studios (based in Los Angeles) say their account was suspended on the
+> evening of 10 March. Their invoice was due on 3 March and our terms give 7 days' grace, so they
+> should have had until the end of the 10th. Two other US customers have said something similar.
+> Nobody in Europe has complained.
 
-* This JSON's terrible, I can't read it.
+### BIL-214: Late fee on suspension (feature)
 
-  Well that's all part of the fun. JSON is pretty easy to format with plugins in most editors, otherwise you could use this great [online formatting tool](https://jsonformatter.curiousconcept.com/).
+> **From finance:** When we suspend an account for non-payment, add a late fee of 2.5% of the
+> outstanding amount, with a minimum of £5. Customers on legacy plans shouldn't be charged the
+> fee. The fee needs to show on the invoice and in the suspension email.
