@@ -4,9 +4,11 @@ import com.data_realm.dunning.TestFixtures.clockAt
 import com.data_realm.dunning.TestFixtures.customer
 import com.data_realm.dunning.TestFixtures.invoice
 import com.data_realm.dunning.TestFixtures.properties
+import com.data_realm.dunning.domain.AdjustmentType
 import com.data_realm.dunning.domain.Customer
 import com.data_realm.dunning.domain.Invoice
 import com.data_realm.dunning.domain.InvoiceStatus
+import com.data_realm.dunning.domain.PlanTier
 import com.data_realm.dunning.money.Money
 import com.data_realm.dunning.notifications.CustomerNotifier
 import com.data_realm.dunning.payments.ChargeResult
@@ -14,8 +16,10 @@ import com.data_realm.dunning.payments.PaymentGateway
 import com.data_realm.dunning.repository.InMemoryCustomerRepository
 import com.data_realm.dunning.repository.InMemoryInvoiceRepository
 import com.data_realm.dunning.time.BillingClock
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class DunningJobTest {
 
@@ -29,8 +33,12 @@ class DunningJobTest {
 
     private class RecordingNotifier : CustomerNotifier {
         val suspended = mutableListOf<String>()
-        override fun invoiceSuspended(customer: Customer, invoice: Invoice) {
+        val notified = mutableListOf<Invoice>()
+        val lateFees = mutableListOf<Money?>()
+        override fun invoiceSuspended(customer: Customer, invoice: Invoice, lateFee: Money?) {
             suspended += invoice.id
+            notified += invoice
+            lateFees += lateFee
         }
     }
 
@@ -39,7 +47,7 @@ class DunningJobTest {
     private val notifier = RecordingNotifier()
 
     private fun job(clock: BillingClock, gateway: PaymentGateway) = DunningJob(
-        invoices, customers, SuspensionPolicy(clock, properties), RetryPolicy(clock, properties), gateway, notifier, clock,
+        invoices, customers, SuspensionPolicy(clock, properties), RetryPolicy(clock, properties), LateFeePolicy(properties), gateway, notifier, clock,
     )
 
     @Test
@@ -90,5 +98,61 @@ class DunningJobTest {
         job.run()
 
         assertEquals(1, gateway.charges.size)
+    }
+
+    @Test
+    fun `suspension adds the late fee as an adjustment and leaves the billed amount alone`() {
+        customers.save(customer())
+        invoices.save(invoice(dueDate = "2026-03-03", amount = Money.of("240.00", "GBP")))
+
+        job(clockAt("2026-03-11T09:00:00Z"), RecordingGateway(succeed = false)).run()
+
+        val saved = invoices.findById("inv_1")!!
+        val fee = saved.adjustments.single()
+        assertEquals(Money.of("240.00", "GBP"), saved.amount)
+        assertEquals(Money.of("246.00", "GBP"), saved.total())
+        assertEquals(AdjustmentType.LATE_FEE, fee.type)
+        assertEquals(Money.of("6.00", "GBP"), fee.amount)
+        assertEquals(Instant.parse("2026-03-11T09:00:00Z"), fee.createdAt)
+    }
+
+    @Test
+    fun `the notifier receives the late fee separately and the same invoice that was saved`() {
+        customers.save(customer())
+        invoices.save(invoice(dueDate = "2026-03-03", amount = Money.of("240.00", "GBP")))
+
+        job(clockAt("2026-03-11T09:00:00Z"), RecordingGateway(succeed = false)).run()
+
+        assertEquals(listOf<Money?>(Money.of("6.00", "GBP")), notifier.lateFees)
+        assertEquals(invoices.findById("inv_1"), notifier.notified.single())
+        assertEquals(Money.of("246.00", "GBP"), notifier.notified.single().total())
+    }
+
+    @Test
+    fun `a legacy plan customer is suspended without a late fee`() {
+        customers.save(customer(plan = PlanTier.CLASSIC_GROWTH))
+        invoices.save(invoice(dueDate = "2026-03-03", amount = Money.of("240.00", "GBP")))
+
+        job(clockAt("2026-03-11T09:00:00Z"), RecordingGateway(succeed = false)).run()
+
+        val saved = invoices.findById("inv_1")!!
+        assertEquals(InvoiceStatus.SUSPENDED, saved.status)
+        assertEquals(emptyList(), saved.adjustments)
+        assertEquals(Money.of("240.00", "GBP"), saved.total())
+        assertNull(notifier.lateFees.single())
+    }
+
+    @Test
+    fun `running the job twice does not add a second late fee`() {
+        customers.save(customer())
+        invoices.save(invoice(dueDate = "2026-03-03", amount = Money.of("240.00", "GBP")))
+        val job = job(clockAt("2026-03-11T09:00:00Z"), RecordingGateway(succeed = false))
+
+        job.run()
+        job.run()
+
+        assertEquals(1, invoices.findById("inv_1")!!.adjustments.size)
+        assertEquals(Money.of("246.00", "GBP"), invoices.findById("inv_1")!!.total())
+        assertEquals(1, notifier.suspended.size)
     }
 }

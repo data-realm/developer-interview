@@ -31,7 +31,7 @@ data class Invoice(
     fun withAttempt(attempt: PaymentAttempt): Invoice = copy(attempts = attempts + attempt)
 }
 
-enum class AdjustmentType { DISCOUNT, CREDIT, TAX_CORRECTION }
+enum class AdjustmentType { DISCOUNT, CREDIT, TAX_CORRECTION, LATE_FEE }
 
 /** A signed change to what the customer owes: negative for discounts and credits. */
 data class InvoiceAdjustment(
